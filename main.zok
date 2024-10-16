@@ -1,0 +1,27 @@
+import "hashes/poseidon/poseidon" as poseidon;
+
+def main(
+    field attr_value,
+    field issuer_private_key,
+    field issuer_public_key,
+    
+    field issuer_did,
+    field user_did
+) -> (field, bool, field) {
+
+    // Step 1: 计算属性值的哈希
+    field[1] attr_value_arr = [attr_value]; 
+    field attr_hash = poseidon(attr_value_arr);  
+    
+    // Step 2: 验证颁发机构DID和公钥的关联
+    field[1] issuer_did_arr = [issuer_did];  
+    field calculated_public_key = poseidon(issuer_did_arr);
+    bool valid_did_pubkey = (calculated_public_key == issuer_public_key);
+    
+    // Step 3: 生成 VC 哈希值 (将 attr_hash, issuer_did, user_did 一起哈希)
+    field[3] vc_data = [attr_hash, issuer_did, user_did];  
+    field vc_hash = poseidon(vc_data);
+    
+    // 输出生成的 vc_hash、DID与公钥验证结果，并输出通过poseidon计算出的issuer_public_key
+    return (vc_hash, valid_did_pubkey, calculated_public_key);
+}
